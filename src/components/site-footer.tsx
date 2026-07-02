@@ -8,7 +8,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
         <div className="space-y-2">
           <Link href="/" className="flex items-center gap-2 font-bold">
-            <Crown className="size-5 text-primary" />
+            <Crown className="size-5 text-amber-500" />
             {siteConfig.name}
           </Link>
           <p className="text-sm text-muted-foreground">{siteConfig.description}</p>

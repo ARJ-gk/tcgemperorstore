@@ -73,7 +73,7 @@ export function SiteHeader({
           <SheetContent side="left" className="w-72">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Crown className="size-5 text-primary" /> {siteConfig.name}
+                <Crown className="size-5 text-amber-500" /> {siteConfig.name}
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-1 px-4">
@@ -100,7 +100,7 @@ export function SiteHeader({
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold">
-          <Crown className="size-6 text-primary" />
+          <Crown className="size-6 text-amber-500" />
           <span className="hidden sm:inline">{siteConfig.name}</span>
         </Link>
 

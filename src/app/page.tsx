@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/product-card";
 import { getCategories, getFeaturedProducts } from "@/lib/queries";
 
+// Each category nods to one of the Four Emperors.
 const CATEGORY_ACCENTS: Record<string, string> = {
-  pokemon: "from-amber-500/20 to-red-500/20",
-  magic: "from-blue-500/20 to-purple-500/20",
-  yugioh: "from-indigo-500/20 to-sky-500/20",
-  sealed: "from-emerald-500/20 to-teal-500/20",
+  pokemon: "from-red-500/25 to-amber-400/20", // Luffy — red & straw gold
+  magic: "from-violet-700/30 to-zinc-900/40", // Blackbeard — darkness
+  yugioh: "from-sky-500/25 to-orange-500/20", // Buggy — blue hair, red nose
+  sealed: "from-rose-700/30 to-red-950/40", // Shanks — deep red
 };
 
 export default async function HomePage() {

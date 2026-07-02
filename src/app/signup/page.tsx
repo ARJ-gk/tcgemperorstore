@@ -14,7 +14,7 @@ export default async function SignupPage() {
   return (
     <div className="mx-auto flex max-w-sm flex-col items-center gap-6 px-4 py-16">
       <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-        <Crown className="size-6 text-primary" /> TCG Emperor
+        <Crown className="size-6 text-amber-500" /> TCG Emperor
       </Link>
       <div className="w-full rounded-xl border p-6 shadow-sm">
         <div className="mb-6 space-y-1 text-center">
