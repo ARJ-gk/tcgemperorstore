@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Package } from "lucide-react";
+import { Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OrderStatusBadge } from "@/components/order-status-badge";
@@ -63,6 +63,17 @@ export default async function AccountPage() {
                     }
                   />
                 </div>
+                {order.tracking_number && (
+                  <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Truck className="size-4" />
+                    Shipped{order.shipped_at &&
+                      ` ${formatDateTime(order.shipped_at)}`}
+                    {order.carrier && ` via ${order.carrier}`} — tracking{" "}
+                    <span className="font-medium text-foreground">
+                      {order.tracking_number}
+                    </span>
+                  </p>
+                )}
                 <Separator className="my-4" />
                 <ul className="space-y-2">
                   {items.map((it) => (

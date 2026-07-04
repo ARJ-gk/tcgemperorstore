@@ -241,6 +241,43 @@ export async function updateOrderStatus(
   revalidatePath("/account");
 }
 
+export async function updateOrderTracking(
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const carrier = str(formData.get("carrier"));
+  const trackingNumber = str(formData.get("tracking_number"));
+  if ((carrier?.length ?? 0) > 100 || (trackingNumber?.length ?? 0) > 100) {
+    return { error: "Carrier / tracking number is too long." };
+  }
+
+  const supabase = await createClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("shipped_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (!order) return { error: "Order not found" };
+
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      carrier,
+      tracking_number: trackingNumber,
+      // Stamp the ship date the first time a tracking number is recorded
+      // (edits keep the original date; clearing the number clears it).
+      shipped_at: trackingNumber
+        ? (order.shipped_at ?? new Date().toISOString())
+        : null,
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/account");
+}
+
 export async function createCategory(
   _prev: ActionState,
   formData: FormData,

@@ -10,16 +10,26 @@ export function Pagination({
   page,
   pageSize,
   total,
+  params,
 }: {
   basePath: string;
   page: number;
   pageSize: number;
   total: number;
+  /** Extra query params (e.g. active filters) to preserve across pages. */
+  params?: Record<string, string | undefined>;
 }) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages <= 1) return null;
 
-  const href = (p: number) => `${basePath}?page=${p}`;
+  const href = (p: number) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params ?? {})) {
+      if (value) search.set(key, value);
+    }
+    search.set("page", String(p));
+    return `${basePath}?${search.toString()}`;
+  };
 
   return (
     <div className="flex items-center justify-between pt-2">

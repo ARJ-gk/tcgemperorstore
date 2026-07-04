@@ -81,49 +81,58 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          carrier: string | null
           currency: string
           email: string | null
           id: string
           refunded_at: string | null
           restocked_at: string | null
           shipping_address: Json | null
+          shipped_at: string | null
           shipping_cents: number
           status: string
           stripe_payment_intent: string | null
           stripe_session_id: string | null
           tax_cents: number
+          tracking_number: string | null
           total_cents: number
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          carrier?: string | null
           currency?: string
           email?: string | null
           id?: string
           refunded_at?: string | null
           restocked_at?: string | null
           shipping_address?: Json | null
+          shipped_at?: string | null
           shipping_cents?: number
           status?: string
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
           tax_cents?: number
+          tracking_number?: string | null
           total_cents?: number
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          carrier?: string | null
           currency?: string
           email?: string | null
           id?: string
           refunded_at?: string | null
           restocked_at?: string | null
           shipping_address?: Json | null
+          shipped_at?: string | null
           shipping_cents?: number
           status?: string
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
           tax_cents?: number
+          tracking_number?: string | null
           total_cents?: number
           user_id?: string | null
         }

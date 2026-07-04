@@ -7,14 +7,22 @@ import { formatDateTime, formatPrice } from "@/lib/format";
 export default async function AdminDashboard() {
   const supabase = await createClient();
 
-  const [{ count: productCount }, { count: orderCount }, paidOrders, recent, lowStock] =
-    await Promise.all([
+  const [
+    { count: productCount },
+    { count: orderCount },
+    paidOrders,
+    recent,
+    lowStock,
+    { count: needsReviewCount },
+  ] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }),
       supabase.from("orders").select("*", { count: "exact", head: true }),
       supabase
         .from("orders")
+        // needs_review orders were paid too — the flag is a stock problem,
+        // not a payment problem.
         .select("total_cents")
-        .in("status", ["paid", "fulfilled"]),
+        .in("status", ["paid", "fulfilled", "needs_review"]),
       supabase
         .from("orders")
         .select("id, created_at, status, total_cents, currency, email")
@@ -26,6 +34,10 @@ export default async function AdminDashboard() {
         .lte("stock", 3)
         .order("stock", { ascending: true })
         .limit(5),
+      supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "needs_review"),
     ]);
 
   const revenue = (paidOrders.data ?? []).reduce(
@@ -45,6 +57,20 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {(needsReviewCount ?? 0) > 0 && (
+        <Link
+          href="/admin/orders?status=needs_review"
+          className="flex items-center gap-3 rounded-lg border border-orange-300 bg-orange-50 p-4 text-sm text-orange-900 hover:bg-orange-100 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200 dark:hover:bg-orange-900"
+        >
+          <TriangleAlert className="size-5 shrink-0" />
+          <span>
+            <strong>{needsReviewCount}</strong>{" "}
+            {needsReviewCount === 1 ? "order needs" : "orders need"} review —
+            payment succeeded but stock could not be fully decremented. Review
+            and reconcile inventory.
+          </span>
+        </Link>
+      )}
       <div className="grid gap-4 sm:grid-cols-3">
         {stats.map(({ label, value, icon: Icon }) => (
           <div key={label} className="rounded-lg border p-5">

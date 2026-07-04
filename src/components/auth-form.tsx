@@ -16,7 +16,12 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const next = safeNext(sp.get("next"));
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    // Surfaced by /auth/callback when a confirmation/recovery link fails.
+    sp.get("error") === "auth_callback"
+      ? "That sign-in link is invalid or has expired. Please try again."
+      : null,
+  );
   const [emailSent, setEmailSent] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -96,7 +101,17 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          {mode === "login" && (
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline hover:text-foreground"
+            >
+              Forgot password?
+            </Link>
+          )}
+        </div>
         <Input
           id="password"
           name="password"
