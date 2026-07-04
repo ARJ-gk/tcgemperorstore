@@ -61,7 +61,7 @@ export function SiteHeader({
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="hairline-foil sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
         {/* Mobile menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -73,7 +73,7 @@ export function SiteHeader({
           <SheetContent side="left" className="w-72">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Crown className="size-5 text-primary" /> {siteConfig.name}
+                <Crown className="size-5 text-gold" /> {siteConfig.name}
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-1 px-4">
@@ -100,7 +100,7 @@ export function SiteHeader({
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold">
-          <Crown className="size-6 text-primary" />
+          <Crown className="size-6 text-gold drop-shadow-[0_0_6px_var(--scene-glow)]" />
           <span className="hidden sm:inline">{siteConfig.name}</span>
         </Link>
 

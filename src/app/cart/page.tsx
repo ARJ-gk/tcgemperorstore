@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Loader2, Lock, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { Loader2, Lock, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { AmbientBackground } from "@/components/fx/ambient-background";
+import { CardSilhouette } from "@/components/fx/card-silhouette";
 import { useCart } from "@/lib/cart-store";
 import { useHydrated } from "@/lib/use-hydrated";
 import { formatPrice } from "@/lib/format";
@@ -47,8 +49,21 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-24 text-center">
-        <ShoppingCart className="size-12 text-muted-foreground" />
+      <div className="relative isolate mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-24 text-center">
+        <AmbientBackground variant="glow" />
+        <div
+          aria-hidden
+          className="relative flex h-28 w-44 items-center justify-center [perspective:700px]"
+        >
+          <CardSilhouette
+            static
+            className="relative w-20 [transform:rotateY(-18deg)_rotateX(6deg)]"
+          />
+          <CardSilhouette
+            static
+            className="relative -ml-8 w-20 opacity-50 [transform:rotateY(18deg)_rotateX(6deg)]"
+          />
+        </div>
         <h1 className="text-2xl font-bold">Your cart is empty</h1>
         <p className="text-muted-foreground">
           Find your next chase card in the shop.
@@ -61,11 +76,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="relative isolate mx-auto max-w-6xl px-4 py-8">
+      <AmbientBackground variant="glow" />
       <h1 className="mb-6 text-3xl font-bold">Your cart</h1>
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         {/* Items */}
-        <div className="divide-y rounded-lg border">
+        <div className="divide-y rounded-lg border bg-card/50">
           {items.map((item) => (
             <div key={item.productId} className="flex gap-4 p-4">
               <Link
@@ -97,7 +113,7 @@ export default function CartPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8"
+                      className="size-8 transition-transform duration-100 active:scale-90"
                       onClick={() =>
                         setQuantity(item.productId, item.quantity - 1)
                       }
@@ -105,13 +121,16 @@ export default function CartPage() {
                     >
                       <Minus className="size-3.5" />
                     </Button>
-                    <span className="w-8 text-center text-sm tabular-nums">
+                    <span
+                      key={item.quantity}
+                      className="fx-motion w-8 text-center text-sm tabular-nums [animation:badge-pop_250ms_ease-out]"
+                    >
                       {item.quantity}
                     </span>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8"
+                      className="size-8 transition-transform duration-100 active:scale-90"
                       disabled={item.quantity >= item.stock}
                       onClick={() =>
                         setQuantity(item.productId, item.quantity + 1)
@@ -139,7 +158,7 @@ export default function CartPage() {
         </div>
 
         {/* Summary */}
-        <div className="h-fit space-y-4 rounded-lg border p-6">
+        <div className="glass-panel h-fit space-y-4 rounded-lg p-6 shadow-ambient lg:sticky lg:top-24">
           <h2 className="text-lg font-semibold">Order summary</h2>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
@@ -156,7 +175,7 @@ export default function CartPage() {
           </div>
           <Button
             size="lg"
-            className="w-full"
+            className="btn-sheen fx-motion w-full"
             onClick={checkout}
             disabled={loading}
           >

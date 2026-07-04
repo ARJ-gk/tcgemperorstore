@@ -17,6 +17,11 @@ export function formatDate(value: string | Date): string {
   }).format(date);
 }
 
+/** Rarities that get the holographic foil treatment in the UI. */
+export function rarityIsFoil(rarity?: string | null): boolean {
+  return !!rarity && /holo|foil|secret|ultra|rare|mythic|alt/i.test(rarity);
+}
+
 export function formatDateTime(value: string | Date): string {
   const date = typeof value === "string" ? new Date(value) : value;
   return new Intl.DateTimeFormat("en-US", {

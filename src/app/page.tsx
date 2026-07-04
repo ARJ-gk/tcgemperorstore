@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ArrowRight, PackageCheck, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/product-card";
+import { CardSilhouette } from "@/components/fx/card-silhouette";
+import { HeroScene } from "@/components/fx/hero-scene";
 import { getCategories, getFeaturedProducts } from "@/lib/queries";
 
 const CATEGORY_ACCENTS: Record<string, string> = {
@@ -17,25 +19,39 @@ export default async function HomePage() {
     getCategories(),
   ]);
 
+  const heroBlocks = "fx-rise fx-motion";
+
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b bg-gradient-to-b from-primary/5 via-background to-background">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-20 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">
+      <section className="relative isolate overflow-hidden border-b">
+        <HeroScene />
+        <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-24 text-center md:py-28">
+          <div
+            className={`${heroBlocks} glass-panel inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-muted-foreground`}
+          >
             <Sparkles className="size-3.5 text-primary" />
             Authentic singles, sealed product &amp; supplies
           </div>
-          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+          <h1
+            className={`${heroBlocks} max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl`}
+            style={{ animationDelay: "90ms" }}
+          >
             Rule your collection with{" "}
-            <span className="text-primary">TCG Emperor</span>
+            <span className="text-foil fx-motion">TCG Emperor</span>
           </h1>
-          <p className="max-w-xl text-lg text-muted-foreground">
+          <p
+            className={`${heroBlocks} max-w-xl text-lg text-muted-foreground`}
+            style={{ animationDelay: "180ms" }}
+          >
             Premium Pokémon, Magic: The Gathering and Yu-Gi-Oh! cards — inspected,
             graded and shipped with care. Secure checkout powered by Stripe.
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg">
+          <div
+            className={`${heroBlocks} flex flex-wrap justify-center gap-3`}
+            style={{ animationDelay: "270ms" }}
+          >
+            <Button asChild size="lg" className="btn-sheen fx-motion">
               <Link href="/products">
                 Shop all products <ArrowRight className="size-4" />
               </Link>
@@ -77,10 +93,14 @@ export default async function HomePage() {
               <Link
                 key={c.id}
                 href={`/products?category=${c.slug}`}
-                className={`group relative flex h-32 flex-col justify-end overflow-hidden rounded-lg border bg-gradient-to-br p-4 ${
+                className={`group relative flex h-32 flex-col justify-end overflow-hidden rounded-lg border bg-gradient-to-br p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lift ${
                   CATEGORY_ACCENTS[c.slug] ?? "from-primary/10 to-background"
                 }`}
               >
+                <CardSilhouette
+                  static
+                  className="absolute -right-2 -top-4 w-14 rotate-12 opacity-0 transition-all duration-500 group-hover:-translate-y-1 group-hover:opacity-100"
+                />
                 <span className="text-lg font-semibold">{c.name}</span>
                 <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                   Shop now{" "}
@@ -104,8 +124,14 @@ export default async function HomePage() {
         </div>
         {featured.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {featured.map((p, i) => (
+              <div
+                key={p.id}
+                className="fx-rise fx-motion"
+                style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+              >
+                <ProductCard product={p} />
+              </div>
             ))}
           </div>
         ) : (

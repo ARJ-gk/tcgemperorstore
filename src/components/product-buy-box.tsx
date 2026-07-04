@@ -50,17 +50,22 @@ export function ProductBuyBox({ product }: { product: Product }) {
           <Button
             variant="ghost"
             size="icon"
-            className="size-9"
+            className="size-9 transition-transform duration-100 active:scale-90"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             aria-label="Decrease quantity"
           >
             <Minus className="size-4" />
           </Button>
-          <span className="w-10 text-center tabular-nums">{qty}</span>
+          <span
+            key={qty}
+            className="fx-motion w-10 text-center tabular-nums [animation:badge-pop_250ms_ease-out]"
+          >
+            {qty}
+          </span>
           <Button
             variant="ghost"
             size="icon"
-            className="size-9"
+            className="size-9 transition-transform duration-100 active:scale-90"
             disabled={qty >= product.stock}
             onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
             aria-label="Increase quantity"
@@ -74,7 +79,11 @@ export function ProductBuyBox({ product }: { product: Product }) {
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Button size="lg" className="flex-1" onClick={() => add(false)}>
+        <Button
+          size="lg"
+          className="btn-sheen fx-motion flex-1"
+          onClick={() => add(false)}
+        >
           <ShoppingCart className="size-4" /> Add to cart
         </Button>
         <Button

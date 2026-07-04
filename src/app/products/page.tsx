@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProductCard } from "@/components/product-card";
 import { ProductsToolbar } from "@/components/products-toolbar";
+import { AmbientBackground } from "@/components/fx/ambient-background";
+import { CardSilhouette } from "@/components/fx/card-silhouette";
 import {
   getCategories,
   getGames,
@@ -41,7 +43,8 @@ export default async function ProductsPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="relative isolate mx-auto max-w-6xl px-4 py-8">
+      <AmbientBackground variant="dots" />
       <div className="mb-2">
         <h1 className="text-3xl font-bold">
           {sp.search ? `Results for “${sp.search}”` : "Shop"}
@@ -57,12 +60,31 @@ export default async function ProductsPage({
 
       {products.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {products.map((p, i) => (
+            <div
+              key={p.id}
+              className="fx-rise fx-motion"
+              style={{ animationDelay: `${Math.min(i, 11) * 40}ms` }}
+            >
+              <ProductCard product={p} />
+            </div>
           ))}
         </div>
       ) : (
         <div className="rounded-lg border border-dashed py-20 text-center">
+          <div
+            aria-hidden
+            className="mx-auto mb-4 flex h-24 w-40 items-center justify-center [perspective:700px]"
+          >
+            <CardSilhouette
+              static
+              className="relative w-16 -rotate-6 [transform:rotateY(-16deg)_rotateX(8deg)]"
+            />
+            <CardSilhouette
+              static
+              className="relative -ml-6 w-16 rotate-6 opacity-60 [transform:rotateY(14deg)_rotateX(6deg)]"
+            />
+          </div>
           <p className="text-lg font-medium">No products found</p>
           <p className="text-muted-foreground">
             Try a different category or search term.

@@ -6,8 +6,10 @@ import { ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProductBuyBox } from "@/components/product-buy-box";
+import { AmbientBackground } from "@/components/fx/ambient-background";
+import { HoloCard } from "@/components/fx/holo-card";
 import { getProductBySlug } from "@/lib/queries";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, rarityIsFoil } from "@/lib/format";
 
 type Params = Promise<{ slug: string }>;
 
@@ -45,7 +47,8 @@ export default async function ProductDetailPage({
   ].filter(([, v]) => Boolean(v)) as [string, string][];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="relative isolate mx-auto max-w-6xl px-4 py-8">
+      <AmbientBackground variant="glow" />
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
         <Link href="/products" className="hover:text-foreground">
@@ -67,22 +70,32 @@ export default async function ProductDetailPage({
       </nav>
 
       <div className="grid gap-8 md:grid-cols-2">
-        {/* Image */}
-        <div className="relative aspect-[5/7] w-full max-w-md overflow-hidden rounded-xl border bg-muted">
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 40vw"
-              className="object-cover"
-              priority
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              No image
-            </div>
-          )}
+        {/* Image showcase */}
+        <div className="relative">
+          <HoloCard
+            rarity={product.rarity}
+            maxTilt={7}
+            className="relative aspect-[5/7] w-full max-w-md overflow-hidden rounded-xl border bg-muted shadow-lift"
+          >
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 40vw"
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-muted-foreground">
+                No image
+              </div>
+            )}
+          </HoloCard>
+          <div
+            aria-hidden
+            className="mx-auto mt-4 h-3 w-3/4 max-w-md rounded-[100%] bg-foreground/10 blur-md dark:bg-black/50"
+          />
         </div>
 
         {/* Details */}
@@ -96,7 +109,14 @@ export default async function ProductDetailPage({
             )}
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <div className="flex flex-wrap gap-2">
-              {product.rarity && <Badge variant="secondary">{product.rarity}</Badge>}
+              {product.rarity &&
+                (rarityIsFoil(product.rarity) ? (
+                  <Badge className="border-transparent bg-[linear-gradient(100deg,var(--holo-violet),var(--holo-magenta))] text-white shadow-sm">
+                    {product.rarity}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">{product.rarity}</Badge>
+                ))}
               {product.condition && (
                 <Badge variant="outline">{product.condition}</Badge>
               )}
@@ -124,7 +144,7 @@ export default async function ProductDetailPage({
           {specs.length > 0 && (
             <>
               <Separator />
-              <dl className="grid grid-cols-2 gap-y-2 text-sm">
+              <dl className="grid grid-cols-2 gap-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
                 {specs.map(([label, value]) => (
                   <div key={label} className="contents">
                     <dt className="text-muted-foreground">{label}</dt>

@@ -5,6 +5,7 @@ import { Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { OrderStatusBadge } from "@/components/order-status-badge";
+import { AmbientBackground } from "@/components/fx/ambient-background";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import { formatDateTime, formatPrice } from "@/lib/format";
@@ -23,7 +24,8 @@ export default async function AccountPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="relative isolate mx-auto max-w-3xl px-4 py-8">
+      <AmbientBackground variant="glow" />
       <div className="mb-6">
         <h1 className="text-3xl font-bold">My orders</h1>
         <p className="text-muted-foreground">Signed in as {user.email}</p>
@@ -45,11 +47,17 @@ export default async function AccountPage() {
           {orders.map((order) => {
             const items = (order.order_items ?? []) as OrderItem[];
             return (
-              <div key={order.id} className="rounded-lg border p-5">
+              <div
+                key={order.id}
+                className="rounded-lg border bg-card p-5 shadow-ambient transition-shadow hover:shadow-lift"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-medium">
-                      Order #{order.id.slice(0, 8).toUpperCase()}
+                      Order{" "}
+                      <span className="font-mono text-sm">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                      </span>
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {formatDateTime(order.created_at)}

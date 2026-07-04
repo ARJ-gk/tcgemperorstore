@@ -43,7 +43,7 @@ export function ProductsToolbar({
   }
 
   return (
-    <div className="mb-6 space-y-4">
+    <div className="sticky top-16 z-30 -mx-4 mb-6 space-y-4 bg-background/85 px-4 py-3 backdrop-blur">
       {/* Category pills */}
       <div className="flex flex-wrap gap-2">
         <button

@@ -6,6 +6,7 @@ import type Stripe from "stripe";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ClearCart } from "@/components/clear-cart";
+import { AmbientBackground } from "@/components/fx/ambient-background";
 import { getStripe } from "@/lib/stripe/server";
 import { formatPrice } from "@/lib/format";
 
@@ -49,11 +50,26 @@ export default async function CheckoutSuccessPage({
   const lineItems = session.line_items?.data ?? [];
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-16">
+    <div className="relative isolate mx-auto max-w-lg px-4 py-16">
+      {paid && <AmbientBackground variant="aurora" />}
       {paid && <ClearCart />}
       <div className="flex flex-col items-center gap-3 text-center">
         {paid ? (
-          <CheckCircle2 className="size-14 text-emerald-500" />
+          <div className="relative grid size-24 place-items-center">
+            <div
+              aria-hidden
+              className="fx-motion absolute -inset-8 rounded-full opacity-20 blur-xl [animation:burst_0.9s_cubic-bezier(0.22,1,0.36,1)_both]"
+              style={{
+                background:
+                  "conic-gradient(from 0deg, var(--holo-cyan), var(--holo-violet), var(--holo-magenta), var(--holo-gold), var(--holo-cyan))",
+              }}
+            />
+            <div
+              aria-hidden
+              className="fx-motion absolute inset-0 rounded-full border-2 border-holo-gold/40 [animation:halo_1.2s_ease-out_0.2s_both]"
+            />
+            <CheckCircle2 className="fx-motion size-14 text-emerald-500 drop-shadow-[0_0_12px_oklch(0.7_0.17_160/40%)] [animation:burst_0.9s_cubic-bezier(0.22,1,0.36,1)_both]" />
+          </div>
         ) : (
           <Clock className="size-14 text-amber-500" />
         )}
@@ -67,7 +83,7 @@ export default async function CheckoutSuccessPage({
         </p>
       </div>
 
-      <div className="mt-8 rounded-xl border p-6">
+      <div className="mt-8 rounded-xl border bg-card p-6 shadow-ambient">
         <h2 className="mb-4 font-semibold">Order summary</h2>
         <ul className="space-y-3">
           {lineItems.map((li) => (

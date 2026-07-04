@@ -36,7 +36,12 @@ export function CartSheet() {
         <Button variant="ghost" size="icon" className="relative" aria-label="Cart">
           <ShoppingCart className="size-5" />
           {count > 0 && (
-            <Badge className="absolute -right-1 -top-1 size-5 justify-center rounded-full p-0 text-[10px] tabular-nums">
+            // key remount replays the pop on every quantity change; count is
+            // client-only state so there's no hydration mismatch.
+            <Badge
+              key={count}
+              className="fx-motion absolute -right-1 -top-1 size-5 justify-center rounded-full p-0 text-[10px] tabular-nums [animation:badge-pop_300ms_ease-out]"
+            >
               {count}
             </Badge>
           )}
