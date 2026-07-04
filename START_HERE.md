@@ -128,8 +128,10 @@ code, a dashboard toggle):
 3. In Supabase → Auth → URL Configuration, add your Vercel domain to **Site URL** and
    **Redirect URLs** (e.g. `https://your-domain.com/**`).
 4. In [Stripe → Webhooks](https://dashboard.stripe.com/test/webhooks), add endpoint
-   `https://your-domain.com/api/webhooks/stripe` for event `checkout.session.completed`,
-   and put its signing secret in the Vercel env var `STRIPE_WEBHOOK_SECRET`.
+   `https://your-domain.com/api/webhooks/stripe` for events `checkout.session.completed`,
+   `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`
+   and `charge.refunded`, and put its signing secret in the Vercel env var
+   `STRIPE_WEBHOOK_SECRET`.
 5. Deploy. To go live: swap Stripe test keys for **live** keys + live webhook secret.
 
 ---

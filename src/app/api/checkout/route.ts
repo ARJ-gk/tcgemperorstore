@@ -103,6 +103,31 @@ export async function POST(request: Request) {
 
   const origin = siteConfig.url;
 
+  // The customer picks a shipping rate inside Stripe Checkout; the standard
+  // rate becomes free once the merchandise subtotal crosses the threshold.
+  const subtotalCents = [...qtyByProduct].reduce((sum, [productId, qty]) => {
+    const product = products?.find((p) => p.id === productId);
+    return sum + (product?.price_cents ?? 0) * qty;
+  }, 0);
+  const freeStandard =
+    subtotalCents >= siteConfig.shipping.freeStandardThresholdCents;
+
+  const shippingOptions: Stripe.Checkout.SessionCreateParams.ShippingOption[] =
+    siteConfig.shipping.options.map((opt, index) => ({
+      shipping_rate_data: {
+        type: "fixed_amount",
+        display_name: opt.name,
+        fixed_amount: {
+          amount: freeStandard && index === 0 ? 0 : opt.amountCents,
+          currency,
+        },
+        delivery_estimate: {
+          minimum: { unit: "business_day", value: opt.minDays },
+          maximum: { unit: "business_day", value: opt.maxDays },
+        },
+      },
+    }));
+
   try {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
@@ -111,6 +136,12 @@ export async function POST(request: Request) {
       currency,
       customer_email: user?.email,
       shipping_address_collection: { allowed_countries: SHIPPING_COUNTRIES },
+      shipping_options: shippingOptions,
+      // Stripe Tax must be activated in the Stripe Dashboard (origin address +
+      // registrations) before this flag can be turned on, so it is opt-in.
+      automatic_tax: {
+        enabled: process.env.STRIPE_AUTOMATIC_TAX === "true",
+      },
       phone_number_collection: { enabled: true },
       billing_address_collection: "auto",
       allow_promotion_codes: true,

@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getStripe } from "@/lib/stripe/server";
 import { isAdmin } from "@/lib/auth";
 import type { OrderStatus } from "@/lib/types";
 import { ORDER_STATUSES } from "@/lib/types";
@@ -166,15 +169,76 @@ export async function deleteProduct(formData: FormData): Promise<void> {
   revalidatePath("/");
 }
 
-export async function updateOrderStatus(formData: FormData): Promise<void> {
+export async function updateOrderStatus(
+  formData: FormData,
+): Promise<ActionState> {
   await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status")) as OrderStatus;
-  if (!ORDER_STATUSES.includes(status)) return;
+  if (!ORDER_STATUSES.includes(status)) return { error: "Unknown status" };
 
-  const supabase = await createClient();
-  await supabase.from("orders").update({ status }).eq("id", id);
+  // Admin verified above — the service-role client lets this action call the
+  // restock_order RPC, which is deliberately not executable by regular users.
+  const admin = createAdminClient();
+  const { data: order } = await admin
+    .from("orders")
+    .select("id, status, stripe_payment_intent")
+    .eq("id", id)
+    .maybeSingle();
+  if (!order) return { error: "Order not found" };
+  if (order.status === status) return;
+
+  // The money has already been returned — reopening the order would desync
+  // Stripe, order status, and stock.
+  if (order.status === "refunded") {
+    return { error: "Refunded orders cannot change status." };
+  }
+
+  if (status === "refunded" && order.stripe_payment_intent) {
+    try {
+      await getStripe().refunds.create({
+        payment_intent: order.stripe_payment_intent,
+        reason: "requested_by_customer",
+      });
+    } catch (err) {
+      // Already refunded in the Stripe Dashboard — safe to record locally.
+      const alreadyRefunded =
+        err instanceof Stripe.errors.StripeError &&
+        err.code === "charge_already_refunded";
+      if (!alreadyRefunded) {
+        console.error("Stripe refund failed for order", id, err);
+        return { error: "Stripe refund failed — order status not changed." };
+      }
+    }
+  }
+
+  // Stock was only decremented for orders that reached paid/fulfilled.
+  // needs_review means some decrements were refused, so restocking those
+  // blindly would inflate inventory — reconcile them manually instead.
+  // restock_order is idempotent (restocked_at stamp), so racing the
+  // charge.refunded webhook is harmless.
+  if (
+    (status === "cancelled" || status === "refunded") &&
+    (order.status === "paid" || order.status === "fulfilled")
+  ) {
+    const { error } = await admin.rpc("restock_order", { p_order_id: id });
+    if (error) return { error: `Restock failed: ${error.message}` };
+  }
+
+  const { error } = await admin
+    .from("orders")
+    .update({
+      status,
+      ...(status === "refunded"
+        ? { refunded_at: new Date().toISOString() }
+        : {}),
+    })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
   revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+  revalidatePath("/account");
 }
 
 export async function createCategory(

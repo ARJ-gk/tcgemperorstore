@@ -84,10 +84,14 @@ export type Database = {
           currency: string
           email: string | null
           id: string
+          refunded_at: string | null
+          restocked_at: string | null
           shipping_address: Json | null
+          shipping_cents: number
           status: string
           stripe_payment_intent: string | null
           stripe_session_id: string | null
+          tax_cents: number
           total_cents: number
           user_id: string | null
         }
@@ -96,10 +100,14 @@ export type Database = {
           currency?: string
           email?: string | null
           id?: string
+          refunded_at?: string | null
+          restocked_at?: string | null
           shipping_address?: Json | null
+          shipping_cents?: number
           status?: string
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
+          tax_cents?: number
           total_cents?: number
           user_id?: string | null
         }
@@ -108,10 +116,14 @@ export type Database = {
           currency?: string
           email?: string | null
           id?: string
+          refunded_at?: string | null
+          restocked_at?: string | null
           shipping_address?: Json | null
+          shipping_cents?: number
           status?: string
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
+          tax_cents?: number
           total_cents?: number
           user_id?: string | null
         }
@@ -219,6 +231,7 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: Record<string, never>; Returns: boolean }
+      restock_order: { Args: { p_order_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

@@ -55,7 +55,13 @@ export default async function AccountPage() {
                       {formatDateTime(order.created_at)}
                     </p>
                   </div>
-                  <OrderStatusBadge status={order.status} />
+                  {/* needs_review is an internal ops flag on an order the
+                      customer successfully paid for — show it as paid. */}
+                  <OrderStatusBadge
+                    status={
+                      order.status === "needs_review" ? "paid" : order.status
+                    }
+                  />
                 </div>
                 <Separator className="my-4" />
                 <ul className="space-y-2">

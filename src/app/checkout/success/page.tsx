@@ -35,7 +35,8 @@ export default async function CheckoutSuccessPage({
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <h1 className="text-2xl font-bold">We couldn&apos;t find that order</h1>
         <p className="mt-2 text-muted-foreground">
-          If you were charged, your confirmation email has the details.
+          If you were charged, your order was still recorded — signed-in
+          customers can find it under “My orders”.
         </p>
         <Button asChild className="mt-6">
           <Link href="/products">Continue shopping</Link>
@@ -61,7 +62,7 @@ export default async function CheckoutSuccessPage({
         </h1>
         <p className="text-muted-foreground">
           {paid
-            ? `A confirmation has been sent to ${session.customer_details?.email ?? "your email"}.`
+            ? `Payment received for ${session.customer_details?.email ?? "your email"} — keep this page or your Stripe receipt as confirmation.`
             : "Your payment is still processing. This page will reflect it shortly."}
         </p>
       </div>
@@ -80,6 +81,50 @@ export default async function CheckoutSuccessPage({
             </li>
           ))}
         </ul>
+        <Separator className="my-4" />
+        <div className="space-y-1.5 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="tabular-nums">
+              {formatPrice(
+                session.amount_subtotal ?? 0,
+                session.currency ?? "usd",
+              )}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Shipping</span>
+            <span className="tabular-nums">
+              {formatPrice(
+                session.total_details?.amount_shipping ?? 0,
+                session.currency ?? "usd",
+              )}
+            </span>
+          </div>
+          {(session.total_details?.amount_tax ?? 0) > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tax</span>
+              <span className="tabular-nums">
+                {formatPrice(
+                  session.total_details?.amount_tax ?? 0,
+                  session.currency ?? "usd",
+                )}
+              </span>
+            </div>
+          )}
+          {(session.total_details?.amount_discount ?? 0) > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Discount</span>
+              <span className="tabular-nums">
+                −
+                {formatPrice(
+                  session.total_details?.amount_discount ?? 0,
+                  session.currency ?? "usd",
+                )}
+              </span>
+            </div>
+          )}
+        </div>
         <Separator className="my-4" />
         <div className="flex justify-between font-semibold">
           <span>Total</span>

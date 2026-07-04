@@ -140,8 +140,23 @@ src/
    (set `NEXT_PUBLIC_SITE_URL` to your deployed URL).
 3. In the [Stripe Dashboard → Webhooks](https://dashboard.stripe.com/webhooks),
    add an endpoint `https://your-domain/api/webhooks/stripe` listening for
-   `checkout.session.completed`, and put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed` and `charge.refunded`, and put its
+   signing secret in `STRIPE_WEBHOOK_SECRET`.
 4. Deploy.
+
+## Shipping, tax & refunds
+
+- **Shipping** rates are defined in `src/lib/config.ts` (`siteConfig.shipping`)
+  and offered as Stripe Checkout shipping options; the standard rate is free
+  above the configured subtotal threshold. Adjust names/amounts there.
+- **Sales tax / VAT** is off by default. Activate
+  [Stripe Tax](https://dashboard.stripe.com/settings/tax) (origin address +
+  registrations), then set `STRIPE_AUTOMATIC_TAX=true`.
+- **Refunds**: setting an order to *refunded* in `/admin/orders` issues a real
+  Stripe refund and returns the items to stock. Refunds issued from the Stripe
+  Dashboard sync back via the `charge.refunded` webhook. Orders flagged
+  `needs_review` are never auto-restocked — reconcile those manually.
 
 ## Going live
 

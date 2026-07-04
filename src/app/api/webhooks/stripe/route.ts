@@ -34,26 +34,73 @@ export async function POST(request: Request) {
     );
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-
-    if (session.payment_status !== "paid") {
-      return NextResponse.json({ received: true });
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        // Delayed payment methods (bank debits etc.) complete the session
+        // before the money moves; async_payment_succeeded fulfills them later.
+        if (session.payment_status === "paid") {
+          await fulfillOrder(stripe, session);
+        }
+        break;
+      }
+      case "checkout.session.async_payment_failed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        // No order exists yet (we only fulfill on payment), so just log it.
+        console.warn("Async payment failed for session", session.id);
+        break;
+      }
+      case "charge.refunded": {
+        // Covers refunds issued from the Stripe Dashboard as well as our own
+        // admin action (which is a no-op here thanks to idempotent restock).
+        await syncRefund(event.data.object as Stripe.Charge);
+        break;
+      }
     }
-
-    try {
-      await fulfillOrder(stripe, session);
-    } catch (err) {
-      console.error("Order fulfillment failed:", err);
-      // Return 500 so Stripe retries delivery.
-      return NextResponse.json(
-        { error: "Fulfillment failed" },
-        { status: 500 },
-      );
-    }
+  } catch (err) {
+    console.error(`Webhook handler failed for ${event.type}:`, err);
+    // Return 500 so Stripe retries delivery.
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
+}
+
+/** Mark the matching order refunded (and restock it) after a full refund. */
+async function syncRefund(charge: Stripe.Charge) {
+  // Partial refunds keep the order in its current status for manual handling.
+  if (!charge.refunded) return;
+
+  const paymentIntent =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+  if (!paymentIntent) return;
+
+  const admin = createAdminClient();
+  const { data: order } = await admin
+    .from("orders")
+    .select("id, status")
+    .eq("stripe_payment_intent", paymentIntent)
+    .maybeSingle();
+  if (!order || order.status === "refunded") return;
+
+  // needs_review orders were only partially decremented, so restocking them
+  // blindly would inflate inventory — leave those for manual reconciliation.
+  if (order.status === "paid" || order.status === "fulfilled") {
+    const { error } = await admin.rpc("restock_order", {
+      p_order_id: order.id,
+    });
+    if (error) throw new Error(`restock_order failed: ${error.message}`);
+  }
+
+  const { error } = await admin
+    .from("orders")
+    .update({ status: "refunded", refunded_at: new Date().toISOString() })
+    .eq("id", order.id);
+  if (error) throw new Error(error.message);
 }
 
 async function fulfillOrder(stripe: Stripe, session: Stripe.Checkout.Session) {
@@ -120,6 +167,8 @@ async function fulfillOrder(stripe: Stripe, session: Stripe.Checkout.Session) {
       email: session.customer_details?.email ?? session.customer_email ?? null,
       status: "paid",
       total_cents: session.amount_total ?? 0,
+      shipping_cents: session.total_details?.amount_shipping ?? 0,
+      tax_cents: session.total_details?.amount_tax ?? 0,
       currency: session.currency ?? "usd",
       stripe_session_id: session.id,
       stripe_payment_intent:
